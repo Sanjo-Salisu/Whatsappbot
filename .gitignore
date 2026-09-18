@@ -1,0 +1,11 @@
+node_modules/
+.env
+service-account.json
+.wwebjs_auth/
+.wwebjs_cache/
+sent-log.json
+.DS_Store
+
+credentials.json
+Download.json
+*.xlsx

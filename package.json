@@ -1,0 +1,24 @@
+{
+  "name": "whatsapp-celebration-bot",
+  "version": "1.0.0",
+  "private": true,
+  "description": "WhatsApp group birthday, anniversary and event reminder bot backed by Google Sheets.",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js",
+    "groups": "node list-groups.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "dotenv": "latest",
+    "googleapis": "^176.0.0",
+    "node-cron": "latest",
+    "qrcode-terminal": "latest",
+    "whatsapp-web.js": "^1.34.7"
+  },
+  "allowScripts": {
+    "puppeteer@24.38.0": true
+  }
+}
