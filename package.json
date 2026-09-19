@@ -9,7 +9,7 @@
     "groups": "node list-groups.js"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=20 <25"
   },
   "dependencies": {
     "dotenv": "latest",

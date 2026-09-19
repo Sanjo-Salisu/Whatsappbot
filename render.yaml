@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: whatsapp-celebration-bot
+    runtime: node
+    plan: starter
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: BOT_DATA_DIR
+        value: /var/data
+      - key: TIMEZONE
+        value: Africa/Lagos
+      - key: POST_HOUR
+        value: "8"
+      - key: POST_MINUTE
+        value: "0"
+      - key: GOOGLE_SHEET_ID
+        sync: false
+      - key: WHATSAPP_GROUP_ID
+        sync: false
+      - key: GOOGLE_SERVICE_ACCOUNT_JSON
+        sync: false
+    disk:
+      name: whatsapp-bot-data
+      mountPath: /var/data
+      sizeGB: 1

@@ -1,6 +1,7 @@
 require("dotenv").config();
 
 const fs = require("fs");
+const http = require("http");
 const path = require("path");
 const qrcode = require("qrcode-terminal");
 const cron = require("node-cron");
@@ -17,7 +18,15 @@ const PEOPLE_RANGE = process.env.PEOPLE_RANGE || "People!A:G";
 const EVENTS_RANGE = process.env.EVENTS_RANGE || "Events!A:E";
 const POST_MONTHLY_LIST = /^true$/i.test(process.env.POST_MONTHLY_LIST || "true");
 const WELCOME_NEW_MEMBERS = /^true$/i.test(process.env.WELCOME_NEW_MEMBERS || "false");
-const LOG_FILE = path.join(__dirname, "sent-log.json");
+// Set BOT_DATA_DIR to a persistent volume in production (for example /var/data
+// on Render). WhatsApp's LocalAuth session and this log must survive restarts.
+const DATA_DIR = process.env.BOT_DATA_DIR || __dirname;
+const LOG_FILE = path.join(DATA_DIR, "sent-log.json");
+const AUTH_DIR = path.join(DATA_DIR, ".wwebjs_auth");
+const PORT = Number(process.env.PORT || 10000);
+let whatsappStatus = "starting";
+
+fs.mkdirSync(DATA_DIR, { recursive: true });
 
 if (!SPREADSHEET_ID) {
   console.error("❌ GOOGLE_SHEET_ID is missing from .env");
@@ -29,27 +38,65 @@ if (!GROUP_ID_FROM_ENV && !GROUP_NAME) {
   process.exit(1);
 }
 
-const auth = new google.auth.GoogleAuth({
-  keyFile:
-    process.env.GOOGLE_APPLICATION_CREDENTIALS ||
-    path.join(__dirname, "service-account.json"),
+function getServiceAccountCredentials() {
+  const value = (process.env.GOOGLE_SERVICE_ACCOUNT_JSON || "").trim();
+  if (!value) return null;
+
+  try {
+    return JSON.parse(value);
+  } catch {
+    // Render secret variables can also hold a base64-encoded JSON key.
+    return JSON.parse(Buffer.from(value, "base64").toString("utf8"));
+  }
+}
+
+const authOptions = {
   scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
-});
+};
+const serviceAccountCredentials = getServiceAccountCredentials();
+if (serviceAccountCredentials) {
+  authOptions.credentials = serviceAccountCredentials;
+} else {
+  authOptions.keyFile =
+    process.env.GOOGLE_APPLICATION_CREDENTIALS ||
+    path.join(__dirname, "service-account.json");
+}
+const auth = new google.auth.GoogleAuth(authOptions);
 
 const sheets = google.sheets({ version: "v4", auth });
 
 const client = new Client({
   authStrategy: new LocalAuth({
     clientId: "celebration-bot",
-    dataPath: path.join(__dirname, ".wwebjs_auth"),
+    dataPath: AUTH_DIR,
   }),
   puppeteer: {
     headless: true,
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    args: [
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-dev-shm-usage",
+    ],
   },
 });
 
 let targetGroupId = null;
+
+// Render web services must listen on PORT. This endpoint intentionally exposes
+// no bot data; it only confirms that the Node process is alive.
+http
+  .createServer((request, response) => {
+    if (request.url === "/healthz") {
+      response.writeHead(200, { "Content-Type": "application/json" });
+      response.end(JSON.stringify({ ok: true, whatsapp: whatsappStatus }));
+      return;
+    }
+    response.writeHead(404, { "Content-Type": "application/json" });
+    response.end(JSON.stringify({ error: "Not found" }));
+  })
+  .listen(PORT, "0.0.0.0", () => {
+    console.log(`Health server listening on port ${PORT}.`);
+  });
 
 function isActive(value) {
   if (value === undefined || value === null || String(value).trim() === "") return true;
@@ -506,23 +553,28 @@ async function upcomingEvents(limit = 10) {
 }
 
 client.on("qr", (qr) => {
+  whatsappStatus = "awaiting_qr";
   console.log("\n📱 Scan this QR code in WhatsApp → Settings → Linked devices → Link a device\n");
   qrcode.generate(qr, { small: true });
 });
 
 client.on("authenticated", () => {
+  whatsappStatus = "authenticated";
   console.log("🔐 WhatsApp authenticated.");
 });
 
 client.on("auth_failure", (message) => {
+  whatsappStatus = "auth_failure";
   console.error("❌ WhatsApp authentication failed:", message);
 });
 
 client.on("disconnected", (reason) => {
+  whatsappStatus = "disconnected";
   console.error("⚠️ WhatsApp disconnected:", reason);
 });
 
 client.on("ready", async () => {
+  whatsappStatus = "ready";
   try {
     console.log("🤖 WhatsApp Celebration Bot is online.");
 await resolveTargetGroup();
