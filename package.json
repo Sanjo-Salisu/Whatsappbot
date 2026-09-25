@@ -6,7 +6,8 @@
   "main": "bot.js",
   "scripts": {
     "start": "node bot.js",
-    "groups": "node list-groups.js"
+    "groups": "node list-groups.js",
+    "postinstall": "puppeteer browsers install chrome"
   },
   "engines": {
     "node": ">=20 <25"

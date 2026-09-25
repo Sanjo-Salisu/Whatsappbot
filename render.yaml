@@ -3,7 +3,7 @@ services:
     name: whatsapp-celebration-bot
     runtime: node
     plan: starter
-    buildCommand: npm ci
+    buildCommand: npm ci && npx puppeteer browsers install chrome
     startCommand: npm start
     healthCheckPath: /healthz
     envVars:
