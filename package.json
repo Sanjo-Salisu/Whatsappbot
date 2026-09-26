@@ -8,7 +8,7 @@
     "start": "node bot.js",
     "groups": "node list-groups.js",
     "postinstall": "PUPPETEER_CACHE_DIR=/opt/render/project/src/.cache/puppeteer npx puppeteer browsers install chrome"
-  },
+    },
   "engines": {
     "node": ">=20 <25"
   },
