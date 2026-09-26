@@ -66,9 +66,14 @@ const auth = new google.auth.GoogleAuth(authOptions);
 
 const sheets = google.sheets({ version: "v4", auth });
 
-console.log("PUPPETEER_CACHE_DIR:", process.env.PUPPETEER_CACHE_DIR);
-console.log("PUPPETEER_EXECUTABLE_PATH:", process.env.PUPPETEER_EXECUTABLE_PATH);
-console.log("Puppeteer executable:", puppeteer.executablePath());
+const fs = require("fs");
+
+const chromePath =
+  process.env.PUPPETEER_EXECUTABLE_PATH ||
+  puppeteer.executablePath();
+
+console.log("Chrome path:", chromePath);
+console.log("Chrome exists:", fs.existsSync(chromePath));
 
 const client = new Client({
   authStrategy: new LocalAuth({
