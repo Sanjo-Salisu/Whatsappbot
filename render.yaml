@@ -3,7 +3,7 @@ services:
     name: whatsapp-celebration-bot
     runtime: node
     plan: starter
-    buildCommand: npm ci && npx puppeteer browsers install chrome
+    buildCommand: npm ci
     startCommand: npm start
     healthCheckPath: /healthz
     envVars:
@@ -11,6 +11,8 @@ services:
         value: 20
       - key: BOT_DATA_DIR
         value: /var/data
+      - key: PUPPETEER_CACHE_DIR
+        value: /opt/render/project/src/.cache/puppeteer
       - key: TIMEZONE
         value: Africa/Lagos
       - key: POST_HOUR

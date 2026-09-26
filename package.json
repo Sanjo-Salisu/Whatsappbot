@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node bot.js",
     "groups": "node list-groups.js",
-    "postinstall": "npx puppeteer browsers install chrome && npx puppeteer browsers list"
+    "postinstall": "npx puppeteer browsers install chrome"
   },
   "engines": {
     "node": ">=20 <25"
