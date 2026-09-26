@@ -12,7 +12,7 @@ services:
       - key: BOT_DATA_DIR
         value: /var/data
       - key: PUPPETEER_CACHE_DIR
-        value: /opt/render/project/src/.cache/puppeteer
+        value: /opt/render/.cache/puppeteer
       - key: TIMEZONE
         value: Africa/Lagos
       - key: POST_HOUR

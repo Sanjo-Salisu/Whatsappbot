@@ -6,6 +6,7 @@ const path = require("path");
 const qrcode = require("qrcode-terminal");
 const cron = require("node-cron");
 const { google } = require("googleapis");
+const puppeteer = require("puppeteer");
 const { Client, LocalAuth } = require("whatsapp-web.js");
 
 const TIMEZONE = process.env.TIMEZONE || "Africa/Lagos";
@@ -71,6 +72,8 @@ const client = new Client({
     dataPath: AUTH_DIR,
   }),
   puppeteer: {
+    executablePath:
+      process.env.PUPPETEER_EXECUTABLE_PATH || puppeteer.executablePath(),
     headless: true,
     args: [
       "--no-sandbox",
