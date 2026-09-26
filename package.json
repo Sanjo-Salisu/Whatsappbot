@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node bot.js",
     "groups": "node list-groups.js",
-    "postinstall": "puppeteer browsers install chrome"
+    "postinstall": "puppeteer browsers install chrome && puppeteer browsers list"
   },
   "engines": {
     "node": ">=20 <25"
