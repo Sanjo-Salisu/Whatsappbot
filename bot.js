@@ -98,18 +98,24 @@ let targetGroupId = null;
 // no bot data; it only confirms that the Node process is alive.
 http
   .createServer((request, response) => {
-    if (request.url === "/healthz") {
+    if (request.url === "/" || request.url === "/healthz") {
       response.writeHead(200, { "Content-Type": "application/json" });
-      response.end(JSON.stringify({ ok: true, whatsapp: whatsappStatus }));
+      response.end(
+        JSON.stringify({
+          ok: true,
+          whatsapp: whatsappStatus,
+        })
+      );
       return;
     }
+
     response.writeHead(404, { "Content-Type": "application/json" });
     response.end(JSON.stringify({ error: "Not found" }));
   })
   .listen(PORT, "0.0.0.0", () => {
     console.log(`Health server listening on port ${PORT}.`);
   });
-
+  
 function isActive(value) {
   if (value === undefined || value === null || String(value).trim() === "") return true;
   return ["yes", "y", "true", "1", "active"].includes(
@@ -841,4 +847,6 @@ client.on("group_join", async (notification) => {
   }
 });
 
-client.initialize();
+client.initialize().catch((error) => {
+  console.error("❌ WhatsApp initialization failed:", error);
+});
